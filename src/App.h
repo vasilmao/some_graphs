@@ -13,8 +13,8 @@ struct App {
     SDL_Renderer* renderer;
 	SDL_Window*   window;
     bool   running;
-    double width;
-    double height;
+    int width;
+    int height;
 
     SDL_Color bg_color;
 
@@ -27,4 +27,4 @@ struct App {
 
 void initApp(App* app, int width, int height);
 void runApp(App* app);
-void clearApp(App* app);
+void destroyApp(App* app);

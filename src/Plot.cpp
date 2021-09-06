@@ -6,7 +6,7 @@ void updateVector(Vector* vector);
 void drawVector(SDL_Renderer* renderer, Vector vec);
 void drawVector(SDL_Renderer* renderer, float x, float y, float x_pr, float y_pr);
 void preRenderPlot(SDL_Renderer* renderer, Plot* plot);
-float getPixels(float x, float y, CoordSystem coords, float* pixel_x, float* pixel_y);
+void getPixels(float x, float y, CoordSystem coords, float* pixel_x, float* pixel_y);
 
 void initPlot(SDL_Renderer* render, Plot* plot, CoordSystem coords, float (*function)(float x)) {
     plot->coords = coords;
@@ -16,7 +16,7 @@ void initPlot(SDL_Renderer* render, Plot* plot, CoordSystem coords, float (*func
     plot->function = function;
     preRenderPlot(render, plot);
 
-    addVector(plot, {-1, -1, 0, 1, 0});
+    addVector(plot, {-1, -1, 0, 1, 0.1});
 }
 
 void preRenderPlot(SDL_Renderer* renderer, Plot* plot) {
@@ -44,16 +44,13 @@ void preRenderPlot(SDL_Renderer* renderer, Plot* plot) {
         float pixel_x = 0;
         float pixel_y = 0;
         float current_y = plot->function(current_x);
-        //printf("e %f %f\n", current_x, current_y);
         getPixels(current_x, current_y, plot->coords, &pixel_x, &pixel_y);
-        //printf("f %f %f, zero is %f %f\n", pixel_x, pixel_y, zero_pixel_x, zero_pixel_y);
         points[i] = {pixel_x, pixel_y};
     }
-    //printf("-----------------kek----------------------\n");
     SDL_RenderDrawLinesF(renderer, points, POINT_CNT);
 }
 
-float getPixels(float x, float y, CoordSystem coords, float* pixel_x, float* pixel_y) {
+void getPixels(float x, float y, CoordSystem coords, float* pixel_x, float* pixel_y) {
     float delta_x = x - coords.x1;
     float delta_y = y - coords.y1;
     *pixel_x = delta_x * coords.pixel_width / (coords.x2 - coords.x1);
@@ -69,9 +66,9 @@ void updatePlot(Plot* plot) {
 void renderPlot(SDL_Renderer* renderer, Plot* plot, int x, int y) {
     // draw plot without vectors
     SDL_SetRenderTarget(renderer, plot->texture_with_vectors);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderCopy(renderer, plot->pre_rendered_texture, NULL, NULL);
     // draw vectors
-    printf("ugh %d\n", plot->vectors_cnt);
     for (int i = 0; i < plot->vectors_cnt; ++i) {
         drawVector(renderer, plot->vectors[i]);
     }
@@ -81,10 +78,13 @@ void renderPlot(SDL_Renderer* renderer, Plot* plot, int x, int y) {
     SDL_RenderCopy(renderer, plot->texture_with_vectors, NULL, &plot_rect);
 }
 
-void clearPlot(Plot* plot) {
+void destroyPlot(Plot* plot) {
     if (plot->vectors != NULL) {
         free(plot->vectors);
     }
+    SDL_DestroyTexture(plot->pre_rendered_texture);
+    SDL_DestroyTexture(plot->texture_with_vectors);
+    free(plot);
 }
 
 void addVector(Plot* plot, Vector vector) {

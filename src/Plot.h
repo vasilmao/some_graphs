@@ -34,5 +34,5 @@ struct Plot {
 void initPlot(SDL_Renderer* render, Plot* plot, CoordSystem coords, float (*function)(float x));
 void updatePlot(Plot* plot);
 void renderPlot(SDL_Renderer* renderer, Plot* plot, int x, int y);
-void clearPlot(Plot* plot);
+void destroyPlot(Plot* plot);
 void addVector(Plot* plot, Vector vector);

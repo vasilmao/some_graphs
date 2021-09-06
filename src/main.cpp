@@ -7,5 +7,5 @@ int main() {
     App app = {};
     initApp(&app, WIDTH, HEIGHT);
     runApp(&app);
-    clearApp(&app);
+    destroyApp(&app);
 }

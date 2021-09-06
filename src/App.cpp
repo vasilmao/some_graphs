@@ -2,6 +2,8 @@
 
 void parseEvent(App* app, SDL_Event event);
 
+const SDL_Color BG_COLOR = {185, 226, 235, 255};
+
 const float SMALL_CHART_X_MIN = -8.0;
 const float SMALL_CHART_X_MAX = 12.0;
 const float SMALL_CHART_Y_MIN = -3.0;
@@ -33,10 +35,10 @@ void updatePlot(Plot* plot);
 void updateVector(Vector* vector);
 void renderPlot(SDL_Renderer* renderer, Plot* plot, int x, int y);
 void renderApp(App* app);
-void clearPlot(Plot* plot);
+void destroyPlot(Plot* plot);
 
 float parabola(float x) {
-    return x * x;
+    return x * sin(x);
 }
 
 
@@ -44,9 +46,8 @@ void initApp(App* app, int width, int height) {
     app->width  = width;
     app->height = height;
 
-    int rendererFlags, windowFlags;
-    rendererFlags = SDL_RENDERER_ACCELERATED;
-    windowFlags = 0;
+    int rendererFlags = SDL_RENDERER_ACCELERATED;
+    int windowFlags = 0;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -88,7 +89,7 @@ void initApp(App* app, int width, int height) {
     initPlot(app->renderer, app->plot_big, big_chart_coords, parabola);
     initPlot(app->renderer, app->plot_small, small_chart_coords, parabola);
 
-    app->bg_color = {185, 226, 235, 255};
+    app->bg_color = BG_COLOR;
     SDL_SetRenderTarget(app->renderer, NULL);
     
 }
@@ -105,7 +106,6 @@ void runApp(App* app) {
         
         renderApp(app);
         printf("%lf\n", CLOCKS_PER_SEC / ((double)(clock() - t)));
-        //break;
         SDL_Delay(10);
     }
 }
@@ -115,17 +115,17 @@ void updateApp(App* app) {
     updatePlot(app->plot_small);
 }
 
+#define OPEN_RGBA(x) x.r, x.g, x.b, x.a
+
 void renderApp(App* app) {
     SDL_SetRenderTarget(app->renderer, NULL);
-    SDL_SetRenderDrawColor(app->renderer, app->bg_color.r, app->bg_color.g, app->bg_color.b, app->bg_color.a);
+    //SDL_SetRenderDrawColor(app->renderer, app->bg_color.r, app->bg_color.g, app->bg_color.b, app->bg_color.a);
+    SDL_SetRenderDrawColor(app->renderer, OPEN_RGBA(app->bg_color));
     SDL_RenderClear(app->renderer);
-    //printf("yeah\n");
+
     renderPlot(app->renderer, app->plot_big, 0, 0);
     renderPlot(app->renderer, app->plot_small, 450, 0);
 
-    // SDL_Rect plot_rect = {0, 0, 400, 300};
-    // SDL_SetRenderTarget(app->renderer, NULL);
-    // SDL_RenderCopy(app->renderer, app->plot_big->pre_rendered_texture, NULL, &(plot_rect));
     SDL_RenderPresent(app->renderer);
 }
 
@@ -135,8 +135,10 @@ void parseEvent(App* app, SDL_Event event) {
     }
 }
 
-void clearApp(App* app) {
-    clearPlot(app->plot_big);
-    clearPlot(app->plot_small);
+void destroyApp(App* app) {
+    destroyPlot(app->plot_big);
+    destroyPlot(app->plot_small);
+    SDL_DestroyRenderer(app->renderer);
+    SDL_DestroyWindow(app->window);
     return;
 }

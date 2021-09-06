@@ -1,6 +1,6 @@
 # ------------------------------------Options-----------------------------------
 LXXFLAGS = $(shell pkg-config --libs sdl2)
-CXXFLAGS = -std=c++2a -O0 $(shell pkg-config --cflags sdl2) -w
+CXXFLAGS = -std=c++2a -O2 $(shell pkg-config --cflags sdl2) -Wall -Werror
 # ------------------------------------Options-----------------------------------
 
 # -------------------------------------Files------------------------------------

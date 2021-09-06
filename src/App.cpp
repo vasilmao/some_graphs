@@ -4,25 +4,25 @@ void parseEvent(App* app, SDL_Event event);
 
 const SDL_Color BG_COLOR = {185, 226, 235, 255};
 
-const float SMALL_CHART_X_MIN = -8.0;
-const float SMALL_CHART_X_MAX = 12.0;
-const float SMALL_CHART_Y_MIN = -3.0;
-const float SMALL_CHART_Y_MAX =  5.0;
+const float SMALL_PLOT_X_MIN = -8.0;
+const float SMALL_PLOT_X_MAX = 12.0;
+const float SMALL_PLOT_Y_MIN = -3.0;
+const float SMALL_PLOT_Y_MAX =  5.0;
 
-const int SMALL_CHART_SCREEN_X       = 450;
-const int SMALL_CHART_SCREEN_WIDTH   = 200;
-const int SMALL_CHART_SCREEN_Y       = 0;
-const int SMALL_CHART_SCREEN_HEIGHT  = 150;
+const int SMALL_PLOT_SCREEN_X       = 450;
+const int SMALL_PLOT_SCREEN_WIDTH   = 200;
+const int SMALL_PLOT_SCREEN_Y       = 0;
+const int SMALL_PLOT_SCREEN_HEIGHT  = 150;
 
-const float BIG_CHART_X_MIN   = -10.0;
-const float BIG_CHART_X_MAX   =  10.0;
-const float BIG_CHART_Y_MIN   = -10.0;
-const float BIG_CHART_Y_MAX   =  10.0;
+const float BIG_PLOT_X_MIN   = -10.0;
+const float BIG_PLOT_X_MAX   =  10.0;
+const float BIG_PLOT_Y_MIN   = -10.0;
+const float BIG_PLOT_Y_MAX   =  10.0;
 
-const int BIG_CHART_SCREEN_X       = 0;
-const int BIG_CHART_SCREEN_WIDTH   = 400;
-const int BIG_CHART_SCREEN_Y       = 0;
-const int BIG_CHART_SCREEN_HEIGHT  = 300;
+const int BIG_PLOT_SCREEN_X       = 0;
+const int BIG_PLOT_SCREEN_WIDTH   = 400;
+const int BIG_PLOT_SCREEN_Y       = 0;
+const int BIG_PLOT_SCREEN_HEIGHT  = 300;
 
 void initPlot(SDL_Renderer* render, Plot* plot, CoordSystem coords, float (*function)(float x));
 void preRenderPlot(SDL_Renderer* renderer, Plot* plot);
@@ -37,12 +37,12 @@ void renderPlot(SDL_Renderer* renderer, Plot* plot, int x, int y);
 void renderApp(App* app);
 void destroyPlot(Plot* plot);
 
-float parabola(float x) {
-    return x * sin(x);
+float function_to_draw(float x) {
+    return sin(x);
 }
 
 
-void initApp(App* app, int width, int height) {
+int initApp(App* app, int width, int height) {
     app->width  = width;
     app->height = height;
 
@@ -50,48 +50,46 @@ void initApp(App* app, int width, int height) {
     int windowFlags = 0;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("Couldn't initialize SDL: %s\n", SDL_GetError());
-		exit(1);
+		return CANT_INITIALIZE_SDL;
 	}
 
     app->window = SDL_CreateWindow("Patcher", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, app->width, app->height, windowFlags);
 	if (!app->window) {
-		printf("Failed to open %d x %d window: %s\n", app->width, app->height, SDL_GetError());
-		exit(1);
+		return CANT_CREATE_WINDOW;
 	}
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
     app->renderer = SDL_CreateRenderer(app->window, -1, rendererFlags);
 	if (!app->renderer) {
-		printf("Failed to create renderer: %s\n", SDL_GetError());
-		exit(1);
+		return CANT_CREATE_RENDERER;
 	}
 
     app->plot_big = (Plot*)calloc(1, sizeof(Plot));
     app->plot_small = (Plot*)calloc(1, sizeof(Plot));
 
-    CoordSystem big_chart_coords   = {BIG_CHART_X_MIN, 
-                                      BIG_CHART_Y_MIN, 
-                                      BIG_CHART_X_MAX, 
-                                      BIG_CHART_Y_MAX, 
-                                      BIG_CHART_SCREEN_WIDTH, 
-                                      BIG_CHART_SCREEN_HEIGHT};
+    CoordSystem big_chart_coords   = {BIG_PLOT_X_MIN, 
+                                      BIG_PLOT_Y_MIN, 
+                                      BIG_PLOT_X_MAX, 
+                                      BIG_PLOT_Y_MAX, 
+                                      BIG_PLOT_SCREEN_WIDTH, 
+                                      BIG_PLOT_SCREEN_HEIGHT};
 
-    CoordSystem small_chart_coords = {SMALL_CHART_X_MIN, 
-                                      SMALL_CHART_Y_MIN, 
-                                      SMALL_CHART_X_MAX, 
-                                      SMALL_CHART_Y_MAX, 
-                                      SMALL_CHART_SCREEN_WIDTH, 
-                                      SMALL_CHART_SCREEN_HEIGHT};
+    CoordSystem small_chart_coords = {SMALL_PLOT_X_MIN, 
+                                      SMALL_PLOT_Y_MIN, 
+                                      SMALL_PLOT_X_MAX, 
+                                      SMALL_PLOT_Y_MAX, 
+                                      SMALL_PLOT_SCREEN_WIDTH, 
+                                      SMALL_PLOT_SCREEN_HEIGHT};
 
 
-    initPlot(app->renderer, app->plot_big, big_chart_coords, parabola);
-    initPlot(app->renderer, app->plot_small, small_chart_coords, parabola);
+    initPlot(app->renderer, app->plot_big, big_chart_coords, function_to_draw);
+    initPlot(app->renderer, app->plot_small, small_chart_coords, function_to_draw);
 
     app->bg_color = BG_COLOR;
     SDL_SetRenderTarget(app->renderer, NULL);
-    
+
+    return SDL_INIT_OK;
 }
 
 void runApp(App* app) {
@@ -107,6 +105,7 @@ void runApp(App* app) {
         renderApp(app);
         printf("%lf\n", CLOCKS_PER_SEC / ((double)(clock() - t)));
         SDL_Delay(10);
+        break;
     }
 }
 

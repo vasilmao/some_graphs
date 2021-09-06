@@ -16,6 +16,7 @@ void drawVector(SDL_Renderer* renderer, Vector vec) {
 void drawVector(SDL_Renderer* renderer, float x, float y, float x_pr, float y_pr) {
     SDL_RenderDrawLineF(renderer, x, y, x + x_pr, y + y_pr);
 
+
     float angle = atan2(y_pr, x_pr);
     float length = sqrt(x_pr * x_pr + y_pr * y_pr);
 

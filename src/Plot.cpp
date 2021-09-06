@@ -16,7 +16,6 @@ void initPlot(SDL_Renderer* render, Plot* plot, CoordSystem coords, float (*func
     plot->function = function;
     preRenderPlot(render, plot);
 
-    addVector(plot, {-1, -1, 0, 1, 0.1});
 }
 
 void preRenderPlot(SDL_Renderer* renderer, Plot* plot) {
@@ -70,7 +69,14 @@ void renderPlot(SDL_Renderer* renderer, Plot* plot, int x, int y) {
     SDL_RenderCopy(renderer, plot->pre_rendered_texture, NULL, NULL);
     // draw vectors
     for (int i = 0; i < plot->vectors_cnt; ++i) {
-        drawVector(renderer, plot->vectors[i]);
+        float v_pixel_x1 = 0;
+        float v_pixel_y1 = 0;
+        float v_pixel_x2 = 0;
+        float v_pixel_y2 = 0;
+        getPixels(plot->vectors[i].x, plot->vectors[i].y, plot->coords, &v_pixel_x1, &v_pixel_y1);
+        getPixels(plot->vectors[i].x + plot->vectors[i].x_pr, plot->vectors[i].y + plot->vectors[i].y_pr, plot->coords, &v_pixel_x2, &v_pixel_y2);
+        printf("%f %f %f %f\n", v_pixel_x1, v_pixel_y1, v_pixel_x2, v_pixel_y2);
+        drawVector(renderer, v_pixel_x1, v_pixel_y1, v_pixel_x2 - v_pixel_x1, v_pixel_y2 - v_pixel_y1);
     }
     // draw plot to window
     SDL_SetRenderTarget(renderer, NULL);
@@ -96,15 +102,5 @@ void addVector(Plot* plot, Vector vector) {
         plot->vectors_capacity *= 2;
         plot->vectors = (Vector*)realloc(plot->vectors, plot->vectors_capacity * sizeof(Vector));
     }
-    float v_pixel_x1 = 0;
-    float v_pixel_y1 = 0;
-    float v_pixel_x2 = 0;
-    float v_pixel_y2 = 0;
-    getPixels(vector.x, vector.y, plot->coords, &v_pixel_x1, &v_pixel_y1);
-    getPixels(vector.x + vector.x_pr, vector.y + vector.y_pr, plot->coords, &v_pixel_x2, &v_pixel_y2);
-    vector.x = v_pixel_x1;
-    vector.y = v_pixel_y1;
-    vector.x_pr = v_pixel_x2 - v_pixel_x1;
-    vector.y_pr = v_pixel_y2 - v_pixel_y1;
     plot->vectors[plot->vectors_cnt++] = vector;
 }
